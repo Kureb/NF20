@@ -3,7 +3,7 @@
 
 int main()
 {
-
+    int pipi = 20;
     FILE* fichier = NULL;
     int score[3] = {0};
     int nbNode,nbEdge,i,j,nDep,nSec,pondMin = 0;
