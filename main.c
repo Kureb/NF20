@@ -3,10 +3,9 @@
 
 int main()
 {
-    int pipi = 20;
     FILE* fichier = NULL;
     int score[3] = {0};
-    int nbNode,nbEdge,i,j,nDep,nSec,pondMin = 0;
+    int nbNode,nbEdge,i,j,g,z,nbNodeDisc,flag,nDep,nPrem,nSec,pondMin = 0;
     int** matNode;
     int** matCouv;
     int* nodCouv;
@@ -78,9 +77,11 @@ int main()
         nodCouv = malloc(nbNode*sizeof(int));
         // Parcourt de la matrice pour trouver l'arrête relié au noeud de départ ayant la plus petite pondération.
         pondMin = 9999999999999;
-
-        for(i=0; i<nbNode; i++){
-            if((matNode[nDep][i] < pondMin) && (matNode[nDep][i] > 0) ){
+        // On vérifie à quels sommets notre sommet est relié et avec quelle pondération.
+        for(i=0; i<nbNode; i++)
+        {
+            if((matNode[nDep][i] < pondMin) && (matNode[nDep][i] > 0) )
+            {
                 pondMin = matNode[nDep][i];
                 nSec = i; //On prend le noeud avec lequel est relié nodCouv avec la pondération minimale.
                 printf("Valeur de pondMin : %d \n", pondMin);
@@ -92,8 +93,41 @@ int main()
         matNode [nSec][nDep] = -2;
         matCouv [nDep] [nSec] = pondMin;
         matCouv [nSec] [nDep] = pondMin;
+
         nodCouv [0] = nDep;
         nodCouv [1] = nSec;
+
+        //Nombre de sommet acutellement découverts.
+        nbNodeDisc = 2;
+        //On parcourt tout les noeuds déjà visité en regardant leurs pondération et garde la plus petite.
+        for(g=2; g<nbNode; g++){
+            do{
+                flag = 1;
+                pondMin = 9999999999999;
+                for(i=0;i<nbNodeDisc;i++){
+                    nDep = nodCouv[i];
+                    for(j=0; j<nbNode; j++){
+                        if((matNode[nDep][j] < pondMin) && (matNode[nDep][j] > 0) ){
+                            pondMin = matNode[nDep][j];
+                            nSec = j; //On prend le noeud avec lequel est relié nodCouv avec la pondération minimale.
+                            nPrem = nDep;
+                        }
+                    }
+                }
+                for(z=0; z<nbNodeDisc; z++){
+                    if(nSec == nodCouv[z])
+                        flag = 0;
+            }
+                matNode[nPrem][nSec] = -2;
+                matNode [nSec][nPrem] = -2;
+            }while(flag == 0);
+            matCouv [nPrem] [nSec] = pondMin;
+            matCouv [nSec] [nPrem] = pondMin;
+
+            nbNodeDisc= nbNodeDisc + 1;
+
+            nodCouv[i] = nSec;
+        }
 
         for(i=0; i<nbNode;i++){
             printf("[");
@@ -101,14 +135,17 @@ int main()
                 printf(" %d ", matNode[i][j]);
             printf("]\n");
         }
-          printf("\n\n");
+        printf("\n\n");
         for(i=0; i<nbNode;i++){
             printf("[");
             for(j=0; j<nbNode;j++)
                 printf(" %d ", matCouv[i][j]);
             printf("]\n");
         }
-
+        for(g=0; g<nbNodeDisc; g++){
+                   printf("[ %d ,", nodCouv[g]);
+                   printf("]");
+        }
 
     }
     else
