@@ -5,11 +5,15 @@ int main()
 {
     FILE* fichier = NULL;
     int score[3] = {0};
-    int nbNode,nbEdge,i,j,g,z,nbNodeDisc,flag,nDep,nPrem,nSec,pondMin = 0;
+    int nbNode,coutMin,nbEdge,i,j,g,z,nbNodeDisc,flag,nDep,nPrem,nSec,pondMin, Fin, nbNodeParc = 0;
     int** matNode;
     int** matCouv;
     int* nodCouv;
-    fichier = fopen("test.txt", "r");
+    int* tab1;
+    int* tab2;
+
+
+    fichier = fopen("inst_v900.dat", "r");
 
     if (fichier != NULL)
     {
@@ -62,14 +66,57 @@ int main()
             matNode[score[0]][score[1]] = score[2];
             matNode[score[1]][score[0]] = score[2];
         }
-        for(i=0; i<nbNode;i++){
+        /*for(i=0; i<nbNode;i++){
             printf("[");
             for(j=0; j<nbNode;j++)
                 printf(" %d ", matNode[i][j]);
             printf("]\n");
-        }
+        }*/
 
         fclose(fichier);
+
+        //VERIFICATION DE CONNEXITE DU GRAPHE.
+
+        tab1=(int) malloc(nbNode*sizeof(int));
+        tab2=(int) malloc(nbNode*sizeof(int));
+
+        for(i=0; i<nbNode; i++)
+            tab1[i] = 0;
+
+        tab1[0] = -1;
+        tab2[0] = 0;
+        i=0;
+        // On boucle tant qu'on arrive à lier des noeuds entre eux.
+        while( Fin != 1){
+
+            nDep = tab2[i];
+            for(j=0; j<nbNode; j++){
+
+                if(matNode[nDep][j] != -1){ // On a trouvé un noeud avec lequel nDep est lié
+                    if(tab1[j] != -1){ // Le noeud avec lequel nDep est lié n'a pas encore été relié avec un noeud déjà parcouru.
+                        nbNodeParc = nbNodeParc + 1;
+                        tab2[nbNodeParc] = j;
+                        tab1[j] = -1;
+                    }
+                }
+
+            }
+            // Si c'est plus petit, on a encore des noeuds pour lesquels on doit vérifier la connexité.
+            if(i < nbNodeParc)
+                i = i++;
+
+            // Si c'est égale, on a parcourut tout les noeuds reliés entre eux, on arrête de boucler
+            if (i == nbNodeParc)
+                Fin = 1;
+
+        }
+
+        // Si le nombre de noeuds reliés n'est pas égale au nombre de noeuds du graphe, le graphe n'est pas connexe.
+        if (nbNodeParc != (nbNode -1)){
+            printf("\n\nLe Graphe n'est pas connexe, l'algorithme n'est pas applicable\n\n");
+            return 0;
+        }
+        else{
 
         printf("Veuillez renseigner le Noeud de depart de l'algorithme de Prim : ");
         scanf("%d",&nDep);
@@ -84,7 +131,7 @@ int main()
             {
                 pondMin = matNode[nDep][i];
                 nSec = i; //On prend le noeud avec lequel est relié nodCouv avec la pondération minimale.
-                printf("Valeur de pondMin : %d \n", pondMin);
+                //printf("Valeur de pondMin : %d \n", pondMin);
             }
         }
 
@@ -93,6 +140,7 @@ int main()
         matNode [nSec][nDep] = -2;
         matCouv [nDep] [nSec] = pondMin;
         matCouv [nSec] [nDep] = pondMin;
+        coutMin = pondMin;
 
         nodCouv [0] = nDep;
         nodCouv [1] = nSec;
@@ -114,22 +162,26 @@ int main()
                         }
                     }
                 }
-                for(z=0; z<nbNodeDisc; z++){
+                // On vérifie si on crée une boucle ou non. Si Oui, on ne prend pas en compte le noeud, on l'indique et continue à chercher.
+                for(z=0; z<nbNodeDisc; z++){ // Pire des cas nbNideDisc = (nbNode - 1).
                     if(nSec == nodCouv[z])
                         flag = 0;
             }
                 matNode[nPrem][nSec] = -2;
                 matNode [nSec][nPrem] = -2;
-            }while(flag == 0);
+            }while(flag == 0); // Pire des cas, on boucle (nbNode-1) fois.
+
+            //nSec n'est pas déjà présent dans l'arbre couvrant, on renseigne donc la valeur trouvée et tag le noeud.
             matCouv [nPrem] [nSec] = pondMin;
             matCouv [nSec] [nPrem] = pondMin;
+            coutMin = coutMin + pondMin;
 
             nbNodeDisc= nbNodeDisc + 1;
 
             nodCouv[i] = nSec;
         }
 
-        for(i=0; i<nbNode;i++){
+        /*for(i=0; i<nbNode;i++){
             printf("[");
             for(j=0; j<nbNode;j++)
                 printf(" %d ", matNode[i][j]);
@@ -145,13 +197,14 @@ int main()
         for(g=0; g<nbNodeDisc; g++){
                    printf("[ %d ,", nodCouv[g]);
                    printf("]");
+        }*/
         }
-
+        printf("\n\n\n\nLe cout minimal de l'arbre associe est : %d", coutMin);
     }
     else
         printf("Ouverture du fichier failed");
 
 
-    printf("Hello world!\n");
+    printf("\n\nHello world!\n");
     return 0;
 }

@@ -6,3 +6,5 @@
 *.txt
 *.out
 bin/*
+*.plist
+*.gitignore
